@@ -1,0 +1,203 @@
+<html>
+
+
+
+	<head>
+
+		<style>
+
+			body {
+				font-family: Arial; 
+			}
+
+
+			table {
+			   	font-family: Courier New; 
+				font-size:16px;
+				position:relative;
+			}
+
+			table td {
+				margin:0;
+			}
+
+			table {
+			   	border-collapse: collapse;
+			}
+
+			.NLS {
+				%font-size:20px;
+				background-color:black;
+			}
+
+		</style>
+
+
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script>
+
+
+			function init(){
+
+				
+
+				MAX_SITES_PER_BLOCK = 60;
+
+				// ClustalX colours http://www.jalview.org/help/html/colourSchemes/clustal.html
+				colours = {	A: "#80a0f0",
+						C: "#f08080",
+						D: "#c048c0",
+						E: "#c048c0",
+						F: "#80a0f0",
+						G: "#f09048",
+						H: "#15a4a4",
+						I: "#80a0f0",
+						K: "#f01505",
+						L: "#80a0f0",
+						M: "#80a0f0",
+						N: "#15c015",
+						P: "#c0c000",
+						Q: "#15c015",
+						R: "#f01505",
+						S: "#15c015",
+						T: "#15c015",
+						V: "#80a0f0",
+						W: "#80a0f0",
+						X: "white",
+						Y: "#15a4a4",
+						}
+
+
+				
+				respiro = [{name: "BPIV&#8209;3", seq: "-G------GLESQKIQTNNHQ----------------------YWTTNSTPKDRRGTRRPSKSARP-QGNQQDHRVDPKGRESHPGTSSTARAAVEQNQQAKTLRYQHLGRAIQWDQAEQLSNQGSRHKRRMERKERTQKRALDLQRGRLHYYRILV"},
+					{name: "HPIV&#8209;3", seq: "-GGEKGKTGLRNQKILTTRYQ----------------------HQTTDPHQKGRRKSQRQ-QPSTPTQRGKQKYRQNHQKHNLHHGISSSTTTPTETNRQAQLLQQQLQDQPIQKNRSEQTLNPNPRHKRQMERKGRIQKRAIDLQRGQLLYCRILV"},
+					{name: "CPIV&#8209;3", seq:  "GGREKRKNGAKEREERDNREERKGRREREKRRSRLGEESIQCPHLPYNHHKLEHRERIKQSQSPRQRERIQPKQQAGTKEKDQHPWTHAPRDNTLKPTDSAMERRDPQETRAGHSDQRYQHRGHKSNRERNQERKKRTQKRALNIQKRRLHYYRVLV"}
+					];
+
+
+
+				
+				henipa = [{name: "HeV", seq: "GAQTRSLNMLGRKTCLGRRVVQPGMFADYPPTKKARVLLRRMSN", NLS: [5, 37]},
+					{name: "NiV", seq: "GAQTRNIHLLGRKTCLGRRVVQPGMFEDHPPTKKARVSMRRMSN", NLS: [5, 38]}
+				];
+				
+
+				avula = [{name: "NDV", seq: "GAHGRAPKRGTTNVRLNSREVNPAAETARKDRRTKSRPPLETRAQTRTQHIMDNGRSHNYQLVQPLMLSDQGRAKTIPLYLRIMSSHL", NLS:[5,35]}];
+
+
+				plot_aln("respiro", respiro, "<i>Respirovirus</i>");
+				plot_aln("henipa", henipa, "<i>Henipavirus</i>");
+				plot_aln("avula", avula, "<i>Avulavirus</i>");
+
+
+				
+			}
+
+
+			function plot_aln(id, seqs, name){
+
+
+
+				console.log(seqs)
+				
+				$("#" + id).before(`<div style="margin-top:50px; margin-bottom:-20px; font-size:20px">` + name + `</div>`);
+
+				// Alignment length
+				var alnLen = 0;
+				for (var i = 0; i < seqs.length; i ++) alnLen = Math.max(alnLen, seqs[i].seq.length);
+
+
+				
+
+
+				// N blocks
+				
+				var nblocks = Math.ceil(alnLen / MAX_SITES_PER_BLOCK);
+
+
+				for (var blockn = 0; blockn < nblocks; blockn++){
+
+
+
+
+					var startSite = blockn * MAX_SITES_PER_BLOCK;
+					var endSite = Math.min((blockn+1) * MAX_SITES_PER_BLOCK, alnLen);
+
+
+
+
+					// Indexing row
+					var row = `<tr> <td style="padding:20;"></td>`;
+					for (var j = startSite; j < endSite; j++){
+						if (j == startSite || (j + 1) % 10 == 0) row += `<td style="position:relative"><span style="position:absolute">` + (j+1) + `</span></td>`;
+						else  row += `<td style="position:relaitve"></td>`;
+					}
+					row = row + `</tr>`;
+					$("#" + id).append(row);
+
+
+
+					// Alignment
+					for (var i = 0; i < seqs.length; i ++){
+
+						var seq = seqs[i];
+						var row = `<tr> <td style="text-align:right;  padding: 0 20; ">` + seq.name + `</td>`;
+
+
+						for (var j = startSite; j < endSite; j++){
+
+							var col = colours[seq.seq[j]];
+
+							// Only show nom-white colour if the column has same colour at every position
+							for (var k = 0; k < seqs.length; k++){
+								if (col != colours[seqs[k].seq[j]]) {
+									col = "white";
+									break;
+								}
+
+							}
+
+							var nt = seq.seq[j];
+							var bgcol = col;
+							if (seq.NLS != null && (j+1) >= seq.NLS[0] && (j+1) <= seq.NLS[1]) bgcol = "black";
+							
+							row = row + `<td style="padding: 4 2; background-color:` + bgcol + `"><span  style="padding: 2 2; background-color:` + col + `">` + nt + `</span></td>`;
+						}
+
+						row = row + `</tr>`;
+						$("#" + id).append(row);
+
+
+					} 
+
+				}
+
+
+
+
+
+			}
+
+
+		</script>
+
+	</head>
+	<body  onload="init()">
+
+
+		
+		<h2 style="margin-bottom:-40px">W protein</h2>
+
+		<table id="avula" padding=0></table>
+
+		<table id="henipa" padding=0></table>
+
+		<table id="respiro" padding=0></table>
+
+
+	</body>
+
+
+
+
+</html>

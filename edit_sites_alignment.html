@@ -1,0 +1,371 @@
+<html>
+
+
+
+	<head>
+
+		<style>
+
+			body {
+				font-family: Arial; 
+			}
+
+
+			table {
+			   	font-family: Courier New; 
+				font-size:16px;
+				position:relative;
+			}
+
+			table td {
+				margin:0;
+			}
+
+			table {
+			   	border-collapse: collapse;
+			}
+
+			.NLS {
+				%font-size:20px;
+				background-color:black;
+			}
+
+		</style>
+
+		
+	<script type="text/x-mathjax-config">
+	  MathJax.Hub.Config({
+	    tex2jax: {
+	      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+	      processEscapes: true
+	    }
+	  });
+	</script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script>
+
+
+			function init(){
+
+				
+
+				MAX_SITES_PER_BLOCK = 60;
+
+				
+				colours = {	A: "#008cba", C: "#9370DB", G: "#FFA500", T: "#C7EA46", U: "#C7EA46"		}
+
+
+				loadCSV("editsites.tsv", function(result){
+
+
+					console.log("result", result);
+
+
+					var PVW = {Species: [], EditSite: [], GenomePosOfStart: []};
+					var VWP = {Species: [], EditSite: [], GenomePosOfStart: []};
+					var VWP_species = [	"APMV-11", "AchPV-1", "AchPV-2", "ThkPV-1", "ThkPV-2", "ThkPV-3", "SosPV", "MenPV", "TevPV", "TioPV", "HPIV-2", "SV-41",
+								"PIV-5", "MuV", "MapV", "PorPV", "HPIV-4a", "HPIV-4b", "AnaPV", "FdlV", "SalPV"]
+					for (var i = 0; i < result.Species.length; i ++){
+
+
+						var inVWP = false;
+
+						console.log(i, result.Species[i], result.EditSite[i], result.GenomePosOfStart[i]);
+
+						for (var j = 0; j < VWP_species.length; j ++){
+
+							
+							if (result.Species[i] == VWP_species[j]){
+								VWP.Species.push(result.Species[i]);
+								VWP.EditSite.push(result.EditSite[i]);
+								VWP.GenomePosOfStart.push(parseFloat(result.GenomePosOfStart[i]));
+								inVWP = true;
+								break;
+
+							}
+
+						}
+
+						if (!inVWP) {
+							PVW.Species.push(result.Species[i]);
+							PVW.EditSite.push(result.EditSite[i]);
+							PVW.GenomePosOfStart.push(parseFloat(result.GenomePosOfStart[i]));
+						}
+
+
+					}
+
+					console.log("PVW", PVW);			
+					console.log("VWP", VWP);
+
+
+					var PVW_genera = [ 	 {genus: "Avulavirus", index: [0, 14], done: false},
+								 {genus: "Aquaparamyxovirus", index: [15, 15], done: false},
+								 {genus: "Respirovirus", index: [16, 20], done: false},
+								 {genus: "Unclassified", index: [21, 23], done: false},
+								 {genus: "Morbillivirus", index: [24, 30], done: false},
+								 {genus: "Unclassified", index: [31, 33], done: false},
+								 {genus: "Henipavirus", index: [34, 37], done: false}   
+							];
+
+
+					var VWP_genera = [	 {genus: "Avulavirus", index: [0, 0], done: false},
+								 {genus: "Rubulavirus", index: [1, 17], done: false},
+								 {genus: "Ferlavirus", index: [18, 19], done: false},
+								 {genus: "Unclassified", index: [20, 20], done: false},];
+
+					plot_aln("PVW", PVW.Species, PVW.EditSite, PVW.GenomePosOfStart, PVW_genera, `<i style="margin-left:30px">P &rarr; V &rarr; W</i>`);
+					plot_aln("VWP", VWP.Species, VWP.EditSite, VWP.GenomePosOfStart, VWP_genera, `<i style="margin-left:30px">V &rarr; W &rarr; P</i>`);
+
+
+				});
+				
+
+				
+
+
+
+				
+			}
+
+
+			function plot_aln(id, species_list, sequence_list, edit_site_loc, genera, name){
+
+
+
+				console.log("PLOT", species_list, sequence_list, edit_site_loc)
+				
+
+				// Alignment length
+				var alnLen = 16;
+
+				var genusrowcols = ["white", "#d3d3d3"];
+				var genusrownum = 1;
+
+
+				// N blocks
+				
+				var nblocks = Math.ceil(alnLen / MAX_SITES_PER_BLOCK);
+
+
+				for (var blockn = 0; blockn < nblocks; blockn++){
+
+
+
+					var startSite = blockn * MAX_SITES_PER_BLOCK;
+					var endSite = Math.min((blockn+1) * MAX_SITES_PER_BLOCK, alnLen);
+
+
+
+
+					// Indexing row
+					var row = `<tr> <td style="padding:20;">Genus</td> <td style="padding:20;">Virus</td> <td style="padding:20;">Site</td>`;
+					for (var j = startSite; j < endSite; j++){
+						if (j == startSite || (j + 1) % 10 == 0) row += `<td style="position:relative"><span style="position:absolute">` + (j+1) + `</span></td>`;
+						else if (j == 8) row += `<td style="vertical-align:bottom; position:relaitve; text-align:center; font-size:26px"><b>&darr;</b></td>`;
+						else row += `<td style="position:relaitve"></td>`;
+					}
+					row = row + `</tr>`;
+					$("#" + id).append(row);
+
+
+
+					// Alignment
+					for (var i = 0; i < sequence_list.length; i ++){
+
+						var seq = sequence_list[i];
+						if (seq == "") continue;
+						var species = species_list[i];
+						var pos = edit_site_loc[i];
+
+						genus_row = "<td></td>";
+						for (var g = 0; g < genera.length; g ++){
+							var genus_obj = genera[g];
+							
+							
+							if (i >= genus_obj.index[0] && i <= genus_obj.index[1]){
+
+
+								if (genus_obj.done) {
+									genus_row = "";
+									continue;
+								}
+
+								
+								var rowspan = (genus_obj.index[1] - genus_obj.index[0] + 1)
+								if (genus_obj.genus == "Unclassified")  genus_row = `<td style="padding-left:5px" rowspan=` + rowspan  + `>Unclassified</td>`;
+								else genus_row = `<td  style="padding-left:5px" rowspan=` + rowspan  + `><i>` + genus_obj.genus + `</i></td>`;
+
+
+								genera[g].done = true;
+								genusrownum ++;
+
+		
+								break;
+							}
+							
+
+						}
+
+						console.log(species, genus_row)
+						
+						var row = `<tr style="padding-left: 5px; padding-right: 5px; background-color:` + genusrowcols[genusrownum % 2] + `">` +  genus_row + ` <td style="text-align:right;  padding: 0 0; ">` + species + `</td><td style="text-align:center">` + pos + `</td>`;
+
+
+						for (var j = startSite; j < endSite; j++){
+
+
+							//console.log("site", j, seq[j]);
+
+							var col = colours[seq[j]];
+
+							// Only show non-white colour if the column has same colour at every position
+							for (var k = 0; false && k < sequence_list.length; k++){
+								if (sequence_list[k] == "") continue;
+								//console.log(sequence_list[k][j]);
+								if (col != colours[sequence_list[k][j]]) {
+									col = "white";
+									break;
+								}
+
+							}
+
+							var nt = seq[j];
+							var bgcol = col;
+							if ((j + pos) % 6 == 1) bgcol = "black";
+
+
+
+							row = row + `<td title="` + (j+pos) + `" style="text-align:center; padding: 4 2; background-color:` + bgcol + `"><span  style="padding: 2 2; background-color:` + col + `">` + nt + `</span></td>`;
+						}
+
+						row = row + `</tr>`;
+						$("#" + id).append(row);
+
+
+					} 
+
+				}
+
+
+
+			}
+
+
+
+
+		
+			// Loads a .csv file and returns as an object
+			function loadCSV(url, resolve = function(result) { }){
+			    
+			    console.log("Trying to open", url);
+			    var xhttp = new XMLHttpRequest();
+			    xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+				  
+				    if (xhttp == null || xhttp.responseXML == "") return resolve( {error: "Error: cannot open " + url});
+
+				    //console.log("xhttp.responseText", xhttp.responseText);
+				    var csvString = xhttp.responseText.split("\n");
+						if (csvString.length == 0)  return resolve( {error: "Error: empty csv file detected at " + url} );
+						
+						
+						var CSV_obj = {};
+						var column_names = [];
+						
+						
+						// Parse the file
+						var haveParsedHeader = false;
+						var nrows = 0;
+						for (var i = 0; i < csvString.length; i ++){
+							var line = csvString[i].trim();
+							if (line == "") continue;
+							
+							var splitLine = line.split("\t");
+							
+							
+							
+							
+							var rowIsHeader = false;
+							for (var j = 0; j < splitLine.length; j ++){
+							
+								// Parse the header
+								if (!haveParsedHeader){
+									rowIsHeader = true;
+									
+									column_names.push(splitLine[j]);
+									CSV_obj[splitLine[j]] = [];
+									
+									
+
+								
+								} else {
+								
+									var value = splitLine[j];
+									var colName = column_names[j];
+									if (colName == null)  return resolve( {error: "Error: too many columns in row " + i + " of file " + url} );
+									
+									CSV_obj[colName].push(value);
+									
+									
+								
+								}
+								
+							}
+							
+							if (rowIsHeader) haveParsedHeader = true;
+							else nrows ++;
+						
+						
+						}
+				    
+
+						CSV_obj.nrows = nrows;
+						return resolve(CSV_obj);
+
+				   
+				}
+			    };
+			    xhttp.open("GET", url, true);
+			    xhttp.send();
+			    
+			    
+			}
+
+
+
+		</script>
+
+	</head>
+	<body  onload="init()">
+
+
+		<table style="vertical-align:top">
+			<tr>
+				<td  style="vertical-align:top">
+					<div style="margin-top:20px; margin-left:25px; margin-bottom:-10px; font-size:18px">$P \xrightarrow{G} V \xrightarrow{G} W$</div>
+					<table id="PVW" padding=0></table>
+				</td>
+
+				<td  style="width:100px">
+					
+				</td>
+
+				<td  style="vertical-align:top">
+					<div style="margin-top:20px; margin-left:25px; margin-bottom:-10px; font-size:18px">$V \xrightarrow{G} W \xrightarrow{G} P$</div>
+					<table id="VWP" padding=0></table>
+				</td>
+			</tr>
+		</table>
+		
+		
+
+
+
+	</body>
+
+
+
+
+</html>
