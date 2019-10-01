@@ -15,11 +15,19 @@ Contains sequence alignments, .xml files to be run in BEAST2, and the output fil
 4) **edit_sites_alignment.html** | *An html file to visualise edit sites (Fig 6) . Must be run in the same directory as* 
 editsites.tsv
 
-5) **VProteins.fasta** | *Predicted or experimentally determined V protein sequences*
+5) **PProteins.fasta** | *Predicted or experimentally determined P protein sequences*
 
-6) **WProteins.fasta** | *Predicted or experimentally determined W protein sequences*
+6) **PProteins_unq.fasta** | *Predicted or experimentally determined P protein sequences (C-terminal regions only)*
 
-7) Phylogenetic tree files as inputs/outputs of BEAST2
+7) **VProteins.fasta** | *Predicted or experimentally determined V protein sequences*
+
+8) **VProteins_unq.fasta** | *Predicted or experimentally determined V protein sequences (C-terminal regions only)*
+
+9) **WProteins.fasta** | *Predicted or experimentally determined W protein sequences*
+
+10) **WProteins_unq.fasta** | *Predicted or experimentally determined W protein sequences (C-terminal regions only)*
+
+11) Phylogenetic tree files as inputs/outputs of BEAST2
 
 - Lprotein_align.fasta
 
